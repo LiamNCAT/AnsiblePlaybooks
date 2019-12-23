@@ -1,0 +1,46 @@
+---
+- host: local
+
+  task:
+    
+    - name: Installing neccesary packages for Xen
+       yum:
+         name: "{{ xen }}"
+         enablerepo: centos-virt-xen
+       vars:
+        xen:
+          - libvirt
+          - libvirt-daemon-xen
+          - virt-install
+          - virt-manager
+    
+    - name: Installing neccesary packages for cloudstack
+       yum:
+         name:"{{ packages }}"
+       vars:
+        packages:
+          - createrepo
+          - genisoimage
+          - ws-commons-util
+          - MySQL-python
+          - python-setuptools
+          - java-1.8.0-openjdk-devel.x86_64
+    
+    -name: Start libvert service
+      service:
+        name:libvirtd
+        state: started
+        enabled: yes
+    
+    -name: Add Repo
+      yum_repository:
+        name: cloudstack
+        description: Apache Cloudstack repo for CentOS 7
+        base_url: http://download.cloudstack.org/centos/7/4.13/
+        
+    -name: Installing Apache Cloudstack
+      yum:
+        name: cloudstack
+        state: latest
+        
+    

@@ -1,0 +1,39 @@
+---
+- host: gitlab
+
+    tasks:
+    
+      - name: Installing Prereq Packages
+        yum:
+          name: {{ package }}
+          state: latest
+        vars:
+          package:
+            - curl
+            - policycoreutils-python
+            - openssh-server
+      
+      - name: Starting sshd
+        service:
+          name: sshd
+          state: started
+          enable: yes
+      
+      - name: Create a directory if it does not exist
+           file:
+            path: /tmp
+            state: directory
+            mode: '0755'
+          
+      - name: getting gitlab install script
+        get_url:
+           url: https://packages.gitlab.com/install/repositories/gitlab/gitlab-ee/script.rpm.sh
+           dest: /tmp/script.rpm.sh
+           
+      - name: run gitlab bash install script
+        `script: /tmp/script.rpm.sh
+        
+      - name: Install gitlab package
+          yum:
+            name: gitlab
+            state: latest

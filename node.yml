@@ -1,0 +1,54 @@
+---
+- host: node
+
+   tasks:
+
+    - name: Install MySql Server
+       yum:
+        name: mysql-server
+        state: latest
+   
+    - name: Install MySql
+        yum:
+         name: mysql
+         state: latest
+         
+    - name: Create a directory if it does not exist
+       file:
+        path: /tmp
+        state: directory
+        mode: '0755'
+    
+    - name: Download Node.js
+       get_url:
+        url: https://nodejs.org/dist/v12.14.0/node-v12.14.0-linux-x64.tar.xz
+        dest: /tmp/node-v12.14.0-linux-x64.tar.xz
+        
+    - name: Extract Node.js to /tmp/node
+        unarchive:
+           src: /tmp/node-v12.14.0-linux-x64.tar.xz
+           dest: /tmp/node/
+        
+    - name: Install Node.js deps
+        yum:
+         name: {{ packages }}
+         state: latest
+        vars:
+          packages:
+            - gcc
+            - gcc-c++
+            
+    - name: Configure Node.js
+       command: ./configure
+       args:
+        chdir: /tmp/node
+        
+    
+    - make: 
+        chdir: /tmp/node
+      become: yes
+      
+    - make:
+       chdir: /tmp/node
+       target: install
+      become: yes

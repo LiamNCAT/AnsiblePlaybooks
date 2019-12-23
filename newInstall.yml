@@ -1,0 +1,55 @@
+---
+- host: local
+
+  tasks:
+  
+  - name: Install mariaDB server
+    yum:
+      name: mariadb-server
+      state: latest
+      
+  - name: Install LDAP
+    yum:
+      name: openldap
+      state: latest
+    register: ldapinstalled
+    notify:
+     - Install LDAP Server
+     
+  - name: Install LDAP Server
+    yum:
+      name: openldap-servers
+      state: latest
+    when: ldapinstalled|success
+    
+      
+  - name: Enable CentOS Xen Repo
+    yum:
+      name: centos-release-xen
+      state: latest
+    register: xenrepoinstall
+    notify:
+     - Update Kernel
+     
+  - name: Update Kernel
+    yum: 
+      name: kernel
+      state: latest
+    when: xenrepoinstall|success
+    
+  - name: Install Xen
+    yum:
+      name: xen
+      state: latest
+      
+  -name: Start MariaDB service
+    service: 
+      name: mariadb
+      state: started
+      enabled: yes
+      
+  -name: Start LDAP service
+    service:
+      name: slapd
+      state: started
+      enabled: yes

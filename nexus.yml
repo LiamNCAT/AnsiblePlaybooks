@@ -1,0 +1,61 @@
+---
+- host: nexus
+
+   tasks:
+    
+    - name: Create a directory if it does not exist
+       file:
+        path: /tmp
+        state: directory
+        mode: '0755'
+        
+    - name: Mount
+      mount:
+       path:
+       src:
+       opts: bind
+       fstype: none
+       state: present
+       
+    - name: Copy nexus from NAS
+       copy:
+        src: /mnt/nexus-3.20.1-01-unix.tar.gz
+        dest: /tmp/nexus-3.20.1-01-unix.tar.gz
+        
+    - name: extract nexus
+       unarchive:
+        src: /tmp/nexus-3.20.1-01-unix.tar.gz
+        dest: /opt/nexus
+        
+    - name: Install JDK
+       yum:
+        name: java-1.8.0-openjdk-devel.x86_64
+        state: latest
+        
+    - name: Add group 'nexus'
+        group:
+          name: nexus
+          state: present
+        
+    - name: Add the user 'nexus'
+        user:
+          name: nexus
+          group: nexus
+        
+    - name: Create a symbolic link
+      file:
+        src: /opt/nexus/bin/nexus
+        dest: /etc/init.d/nexus
+        owner: nexus
+        group: nexus
+        state: link
+    
+    - name: make sure nexus is started on runlevels 3, 4 and 5
+      sysvinit:
+          name: nexus
+          state: started
+          enabled: yes
+          runlevels:
+            - 3
+            - 4
+            - 5

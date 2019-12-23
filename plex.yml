@@ -1,0 +1,79 @@
+---
+- host: plex
+
+  tasks:
+    
+    - name: Mount
+      mount:
+       path:
+       src:
+       opts: bind
+       fstype: none
+       state: present
+    
+    - name: Install firewalld
+       yum:
+        name: firewalld
+        state: latest
+    
+    - name: Download Plex
+      get_url:
+        url: https://downloads.plex.tv/plex-media-server-new/1.18.3.2156-349e9837e/redhat/plexmediaserver-1.18.3.2156-349e9837e.x86_64.rpm
+        dest: /var/plexmediaserver-1.18.3.2156-349e9837e.x86_64.rpm
+      register: downloadplex
+      notify:
+        - Install Plex Server
+    
+    - name: Install Plex Server
+      yum: 
+        name: /var/plexmediaserver-1.18.3.2156-349e9837e.x86_64.rpm
+        state: present
+      when: downloadplex|success
+    
+    - firewalld:
+       port: 32400/tcp
+       permanent: true
+       state: enabled
+       service: plexmediaserver
+       
+    - firewalld:
+       port: 1900/udp
+       permanent: true
+       state: enabled
+       service: plexmediaserver
+
+    - firewalld:
+       port: 3005/tcp
+       permanent: true
+       state: enabled
+       service: plexmediaserver
+
+    - firewalld:
+       port: 5353/udp
+       permanent: true
+       state: enabled
+       service: plexmediaserver
+       
+    - firewalld:
+       port: 8324/tcp
+       permanent: true
+       state: enabled
+       service: plexmediaserver
+       
+    - firewalld:
+       port: 32410/udp
+       permanent: true
+       state: enabled
+       service: plexmediaserver
+
+    - firewalld:
+       port: 32412-32414/udp
+       permanent: true
+       state: enabled
+       service: plexmediaserver
+
+    - firewalld:
+       port: 32469/tcp
+       permanent: true
+       state: enabled
+       service: plexmediaserver
